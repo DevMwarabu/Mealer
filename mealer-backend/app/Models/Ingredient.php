@@ -25,6 +25,16 @@ class Ingredient extends Model
         'vitamin_d',
         'sodium',
         'sugar',
+        'nutrient_density_score',
+        'anti_inflammatory_score',
+        'gut_health_score',
+        'metabolic_impact_score',
+        'iron_content_mg',
+        'calcium_content_mg',
+        'potassium_content_mg',
+        'carbon_footprint_kg',
+        'is_seasonal',
+        'historical_avg_price',
     ];
 
     public function category()

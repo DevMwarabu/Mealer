@@ -5,16 +5,46 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Services\AIIntelligenceService;
 use App\Services\DynamicRecalculationService;
+use App\Services\OptimizationEngineService;
+use App\Services\MetabolicScoringService;
+use App\Services\ContextualIntelligenceService;
+use App\Services\FinancialAwarenessService;
+use App\Services\BehavioralIntelligenceService;
+use App\Services\HouseholdIntelligenceService;
+use App\Services\PredictiveAnalyticsService;
 
 class AutoPlanController extends Controller
 {
     protected $aiService;
     protected $dynamicService;
+    protected $optimizationService;
+    protected $metabolicService;
+    protected $contextualService;
+    protected $financialService;
+    protected $behavioralService;
+    protected $householdService;
+    protected $predictiveService;
 
-    public function __construct(AIIntelligenceService $aiService, DynamicRecalculationService $dynamicService)
-    {
+    public function __construct(
+        AIIntelligenceService $aiService,
+        DynamicRecalculationService $dynamicService,
+        OptimizationEngineService $optimizationService,
+        MetabolicScoringService $metabolicService,
+        ContextualIntelligenceService $contextualService,
+        FinancialAwarenessService $financialService,
+        BehavioralIntelligenceService $behavioralService,
+        HouseholdIntelligenceService $householdService,
+        PredictiveAnalyticsService $predictiveService
+    ) {
         $this->aiService = $aiService;
         $this->dynamicService = $dynamicService;
+        $this->optimizationService = $optimizationService;
+        $this->metabolicService = $metabolicService;
+        $this->contextualService = $contextualService;
+        $this->financialService = $financialService;
+        $this->behavioralService = $behavioralService;
+        $this->householdService = $householdService;
+        $this->predictiveService = $predictiveService;
     }
 
     /**
@@ -32,10 +62,11 @@ class AutoPlanController extends Controller
             'name' => 'Demo User'
         ]);
 
-        $plan = $this->aiService->generateMonthlyPlan($user);
+        $plan = $this->optimizationService->solveMonthlyOptimization($user);
 
         return response()->json([
-            'message' => 'Intelligence Baseline Established',
+            'message' => 'V2 Optimization Pipeline Established',
+            'optimization_grade' => $plan['meta']['optimization_grade'],
             'plan' => $plan
         ]);
     }
@@ -45,19 +76,65 @@ class AutoPlanController extends Controller
      */
     public function getToday(Request $request)
     {
+        $user = new \App\Models\User([
+            'id' => 1,
+            'country' => 'Kenya',
+            'monthly_budget_target' => 20000,
+            'name' => 'Demo User'
+        ]);
+
+        $seasonal = $this->contextualService->getSeasonalContext($user->country);
+        $cultural = $this->contextualService->getCulturalPatterns($user->id, $user->country);
+        $behavioral = $this->behavioralService->getCognitiveLoadStatus($user);
+        $discipline = $this->behavioralService->calculateDisciplineScore($user);
+        $predictions = $this->predictiveService->predictWeightTrajectory($user);
+        $clinical = $this->predictiveService->generateClinicalSummary($user);
+
+        // Mock Household Coordination
+        $householdStats = [
+            'sync_active' => true,
+            'collective_remaining' => 4500,
+            'family_portions' => 4,
+            'shared_grocery_alert' => 'User "Sarah" has picked up the milk.'
+        ];
+
+        // Simulating an inflation alert for one of the ingredients
+        $sampleIngredient = new \App\Models\Ingredient(['name' => 'Beef (Lean)', 'category_id' => 1]); // Category 1 = Proteins
+        $alternative = $this->financialService->suggestAlternatives($sampleIngredient);
+
         return response()->json([
             'date' => now()->toDateString(),
-            'status' => 'Optimized',
+            'status' => 'Autonomous Optimization Active',
+            'household' => $householdStats,
+            'predictive' => [
+                'weight_trajectory' => $predictions,
+                'clinical_summary' => $clinical
+            ],
+            'context' => [
+                'season' => $seasonal['season'],
+                'abundant_items' => $seasonal['abundant'],
+                'cultural_focus' => $cultural['traditional_staples'][0] ?? 'Balanced',
+                'inflation_alert' => $alternative ? "High inflation on {$sampleIngredient->name}. Suggested alternative: {$alternative['item']} ({$alternative['savings']} savings)." : null,
+                'behavioral_load' => $behavioral['status'],
+                'discipline_score' => $discipline
+            ],
             'meals' => [
-                ['id' => 'm1', 'type' => 'Breakfast', 'name' => 'High-Protein Oats & Chia', 'calories' => 420, 'cost' => 'KES 180', 'status' => 'pending'],
-                ['id' => 'm2', 'type' => 'Lunch', 'name' => 'Grilled Chicken Salad', 'calories' => 550, 'cost' => 'KES 450', 'status' => 'pending'],
-                ['id' => 'm3', 'type' => 'Dinner', 'name' => 'Lentil Stew with Rice', 'calories' => 600, 'cost' => 'KES 220', 'status' => 'pending'],
+                ['id' => 'm1', 'type' => 'Breakfast', 'name' => 'Metabolic-Boost Oats', 'calories' => 420, 'cost' => 'KES 180', 'metabolic_score' => 92, 'status' => 'pending'],
+                ['id' => 'm2', 'type' => 'Lunch', 'name' => 'Anti-Inflammatory Salmon', 'calories' => 550, 'cost' => 'KES 850', 'metabolic_score' => 98, 'status' => 'pending'],
+                ['id' => 'm3', 'type' => 'Dinner', 'name' => 'Gut-Health Fiber Bowl', 'calories' => 600, 'cost' => 'KES 220', 'metabolic_score' => 95, 'status' => 'pending'],
+            ],
+            'v2_metrics' => [
+                'discipline_grade' => 'A',
+                'metabolic_impact' => '+12% Efficiency',
+                'budget_stability' => 'Stable',
+                'nutrient_gap_status' => 'Iron: Optimal, Potassium: Low (+200mg required)',
+                'sustainability_score' => 88
             ],
             'metrics' => [
                 'target_calories' => 1950,
                 'planned_calories' => 1570,
-                'target_cost' => 1000,
-                'planned_cost' => 850
+                'target_cost' => 1250,
+                'planned_cost' => 1250
             ]
         ]);
     }
