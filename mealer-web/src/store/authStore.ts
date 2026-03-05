@@ -11,6 +11,8 @@ interface User {
     weight?: number;
     sodium_target?: number;
     sugar_target?: number;
+    subscription_tier?: string;
+    privacy_mode?: string;
 }
 
 interface AuthState {

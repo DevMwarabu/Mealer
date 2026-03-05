@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { User, Bell, Shield, MapPin, CreditCard, ChevronRight, Sparkles, Loader2, X, Check } from 'lucide-react';
+import { User, Bell, Shield, MapPin, CreditCard, ChevronRight, Sparkles, Loader2, X, Check, Activity, ShieldCheck } from 'lucide-react';
 import { useAuthStore } from '../../store/authStore';
 import axios from 'axios';
 
@@ -55,8 +55,8 @@ const EditProfileModal = ({ isOpen, onClose, user, onSave }: any) => {
             <div className="bg-white rounded-[40px] w-full max-w-lg overflow-hidden shadow-2xl animate-in zoom-in-95 duration-300">
                 <div className="p-8 border-b border-slate-100 flex items-center justify-between bg-slate-50/50">
                     <div>
-                        <h2 className="text-xl font-black text-slate-900">Edit Biological Profile</h2>
-                        <p className="text-[10px] uppercase tracking-widest font-bold text-slate-400 mt-1">Recalculate Metabolic Intelligence</p>
+                        <h2 className="text-xl font-black text-slate-900">Biological Profile</h2>
+                        <p className="text-[10px] uppercase tracking-widest font-bold text-slate-400 mt-1">Metabolic Baseline Configuration</p>
                     </div>
                     <button onClick={onClose} className="p-2 hover:bg-white rounded-full transition-colors border border-transparent hover:border-slate-200">
                         <X className="w-5 h-5 text-slate-400" />
@@ -64,38 +64,24 @@ const EditProfileModal = ({ isOpen, onClose, user, onSave }: any) => {
                 </div>
 
                 <form onSubmit={handleSubmit} className="p-8 space-y-6">
-                    <div className="grid grid-cols-2 gap-4">
-                        <div className="space-y-2">
-                            <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Full Name</label>
-                            <input
-                                type="text"
-                                value={formData.name}
-                                onChange={e => setFormData({ ...formData, name: e.target.value })}
-                                className="w-full px-5 py-3.5 bg-slate-50 border-none rounded-2xl text-sm font-bold focus:ring-2 focus:ring-primary/20 transition-all"
-                            />
-                        </div>
-                        <div className="space-y-2">
-                            <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Regional Context</label>
-                            <select
-                                value={formData.country}
-                                onChange={e => setFormData({ ...formData, country: e.target.value })}
-                                className="w-full px-5 py-3.5 bg-slate-50 border-none rounded-2xl text-sm font-bold focus:ring-2 focus:ring-primary/20 transition-all appearance-none"
-                            >
-                                <option value="Kenya">Kenya (KES)</option>
-                                <option value="USA">USA (USD)</option>
-                                <option value="UK">UK (GBP)</option>
-                            </select>
-                        </div>
+                    <div className="space-y-2">
+                        <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Full Name</label>
+                        <input
+                            type="text"
+                            value={formData.name}
+                            onChange={e => setFormData({ ...formData, name: e.target.value })}
+                            className="w-full px-5 py-3.5 bg-slate-50 border-none rounded-2xl text-sm font-bold focus:ring-2 focus:ring-primary/20 transition-all font-mono"
+                        />
                     </div>
 
-                    <div className="grid grid-cols-3 gap-4">
+                    <div className="grid grid-cols-2 gap-4">
                         <div className="space-y-2">
                             <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Height (cm)</label>
                             <input
                                 type="number"
                                 value={formData.height}
                                 onChange={e => setFormData({ ...formData, height: e.target.value })}
-                                className="w-full px-5 py-3.5 bg-slate-50 border-none rounded-2xl text-sm font-bold focus:ring-2 focus:ring-primary/20 transition-all"
+                                className="w-full px-5 py-3.5 bg-slate-50 border-none rounded-2xl text-sm font-bold focus:ring-2 focus:ring-primary/20 transition-all font-mono"
                             />
                         </div>
                         <div className="space-y-2">
@@ -104,17 +90,32 @@ const EditProfileModal = ({ isOpen, onClose, user, onSave }: any) => {
                                 type="number"
                                 value={formData.weight}
                                 onChange={e => setFormData({ ...formData, weight: e.target.value })}
-                                className="w-full px-5 py-3.5 bg-slate-50 border-none rounded-2xl text-sm font-bold focus:ring-2 focus:ring-primary/20 transition-all"
+                                className="w-full px-5 py-3.5 bg-slate-50 border-none rounded-2xl text-sm font-bold focus:ring-2 focus:ring-primary/20 transition-all font-mono"
                             />
                         </div>
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-4">
                         <div className="space-y-2">
-                            <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Daily Cap (kcal)</label>
+                            <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Daily Calories</label>
                             <input
                                 type="number"
                                 value={formData.daily_calorie_target}
                                 onChange={e => setFormData({ ...formData, daily_calorie_target: e.target.value })}
-                                className="w-full px-5 py-3.5 bg-slate-50 border-none rounded-2xl text-sm font-bold focus:ring-2 focus:ring-primary/20 transition-all"
+                                className="w-full px-5 py-3.5 bg-slate-50 border-none rounded-2xl text-sm font-bold focus:ring-2 focus:ring-primary/20 transition-all font-mono"
                             />
+                        </div>
+                        <div className="space-y-2">
+                            <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Regional Context</label>
+                            <select
+                                value={formData.country}
+                                onChange={e => setFormData({ ...formData, country: e.target.value })}
+                                className="w-full px-5 py-3.5 bg-slate-50 border-none rounded-2xl text-sm font-bold focus:ring-2 focus:ring-primary/20 transition-all appearance-none font-mono"
+                            >
+                                <option value="Kenya">Kenya (KES)</option>
+                                <option value="USA">USA (USD)</option>
+                                <option value="UK">UK (GBP)</option>
+                            </select>
                         </div>
                     </div>
 
@@ -122,14 +123,155 @@ const EditProfileModal = ({ isOpen, onClose, user, onSave }: any) => {
                         disabled={saving}
                         className="w-full py-4 bg-slate-900 text-white rounded-[20px] font-black text-xs uppercase tracking-[0.2em] shadow-xl shadow-slate-200 hover:bg-primary transition-all flex items-center justify-center gap-3 group"
                     >
-                        {saving ? (
-                            <Loader2 className="w-4 h-4 animate-spin" />
-                        ) : (
-                            <>
-                                <Check className="w-4 h-4" />
-                                Save & Recalibrate Matrix
-                            </>
-                        )}
+                        {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <><Check className="w-4 h-4" /> Save Configuration</>}
+                    </button>
+                </form>
+            </div>
+        </div>
+    );
+};
+
+const AlertThresholdsModal = ({ isOpen, onClose, user, onSave }: any) => {
+    const [formData, setFormData] = useState({
+        sodium_target: user?.sodium_target || 2300,
+        sugar_target: user?.sugar_target || 50
+    });
+    const [saving, setSaving] = useState(false);
+
+    if (!isOpen) return null;
+
+    const handleSubmit = async (e: React.FormEvent) => {
+        e.preventDefault();
+        setSaving(true);
+        try {
+            const token = localStorage.getItem('token');
+            const res = await axios.put('http://localhost:8000/api/user/profile', formData, {
+                headers: { Authorization: `Bearer ${token}` }
+            });
+            onSave(res.data.user);
+            onClose();
+        } catch (error) {
+            console.error('Failed to update thresholds', error);
+        } finally {
+            setSaving(false);
+        }
+    };
+
+    return (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-in fade-in duration-300">
+            <div className="bg-white rounded-[40px] w-full max-w-lg overflow-hidden shadow-2xl animate-in zoom-in-95 duration-300">
+                <div className="p-8 border-b border-slate-100 flex items-center justify-between bg-slate-50/50">
+                    <div>
+                        <h2 className="text-xl font-black text-slate-900">Alert Thresholds</h2>
+                        <p className="text-[10px] uppercase tracking-widest font-bold text-slate-400 mt-1">Risk Mitigation Calibration</p>
+                    </div>
+                    <button onClick={onClose} className="p-2 hover:bg-white rounded-full transition-colors border border-transparent hover:border-slate-200">
+                        <X className="w-5 h-5 text-slate-400" />
+                    </button>
+                </div>
+
+                <form onSubmit={handleSubmit} className="p-8 space-y-6">
+                    <div className="space-y-2">
+                        <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Sodium Cap (mg/day)</label>
+                        <input
+                            type="number"
+                            value={formData.sodium_target}
+                            onChange={e => setFormData({ ...formData, sodium_target: parseInt(e.target.value) })}
+                            className="w-full px-5 py-3.5 bg-slate-50 border-none rounded-2xl text-sm font-bold focus:ring-2 focus:ring-primary/20 transition-all font-mono"
+                        />
+                    </div>
+                    <div className="space-y-2">
+                        <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Sugar Cap (g/day)</label>
+                        <input
+                            type="number"
+                            value={formData.sugar_target}
+                            onChange={e => setFormData({ ...formData, sugar_target: parseInt(e.target.value) })}
+                            className="w-full px-5 py-3.5 bg-slate-50 border-none rounded-2xl text-sm font-bold focus:ring-2 focus:ring-primary/20 transition-all font-mono"
+                        />
+                    </div>
+
+                    <button
+                        disabled={saving}
+                        className="w-full py-4 bg-secondary text-white rounded-[20px] font-black text-xs uppercase tracking-[0.2em] shadow-xl shadow-secondary/20 hover:opacity-90 transition-all flex items-center justify-center gap-3 group"
+                    >
+                        {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <><Activity className="w-4 h-4" /> Calibrate Guards</>}
+                    </button>
+                </form>
+            </div>
+        </div>
+    );
+};
+
+const SystemPreferencesModal = ({ isOpen, onClose, user, onSave }: any) => {
+    const [formData, setFormData] = useState({
+        subscription_tier: user?.subscription_tier || 'Premium Intelligence',
+        privacy_mode: user?.privacy_mode || 'Anonymized'
+    });
+    const [saving, setSaving] = useState(false);
+
+    if (!isOpen) return null;
+
+    const handleSubmit = async (e: React.FormEvent) => {
+        e.preventDefault();
+        setSaving(true);
+        try {
+            const token = localStorage.getItem('token');
+            const res = await axios.put('http://localhost:8000/api/user/profile', formData, {
+                headers: { Authorization: `Bearer ${token}` }
+            });
+            onSave(res.data.user);
+            onClose();
+        } catch (error) {
+            console.error('Failed to update system prefs', error);
+        } finally {
+            setSaving(false);
+        }
+    };
+
+    return (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-in fade-in duration-300">
+            <div className="bg-white rounded-[40px] w-full max-w-lg overflow-hidden shadow-2xl animate-in zoom-in-95 duration-300">
+                <div className="p-8 border-b border-slate-100 flex items-center justify-between bg-slate-50/50">
+                    <div>
+                        <h2 className="text-xl font-black text-slate-900">System Preferences</h2>
+                        <p className="text-[10px] uppercase tracking-widest font-bold text-slate-400 mt-1">Neural Layer & Access Control</p>
+                    </div>
+                    <button onClick={onClose} className="p-2 hover:bg-white rounded-full transition-colors border border-transparent hover:border-slate-200">
+                        <X className="w-5 h-5 text-slate-400" />
+                    </button>
+                </div>
+
+                <form onSubmit={handleSubmit} className="p-8 space-y-6">
+                    <div className="space-y-2">
+                        <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Intelligence Tier</label>
+                        <select
+                            value={formData.subscription_tier}
+                            onChange={e => setFormData({ ...formData, subscription_tier: e.target.value })}
+                            className="w-full px-5 py-3.5 bg-slate-50 border-none rounded-2xl text-sm font-bold focus:ring-2 focus:ring-primary/20 transition-all font-mono"
+                        >
+                            <option value="Basic Node">Basic Node</option>
+                            <option value="Premium Intelligence">Premium Intelligence</option>
+                            <option value="Clinical Enterprise">Clinical Enterprise</option>
+                        </select>
+                    </div>
+                    <div className="space-y-2">
+                        <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Data Privacy Mode</label>
+                        <select
+                            value={formData.privacy_mode}
+                            onChange={e => setFormData({ ...formData, privacy_mode: e.target.value })}
+                            className="w-full px-5 py-3.5 bg-slate-50 border-none rounded-2xl text-sm font-bold focus:ring-2 focus:ring-primary/20 transition-all font-mono"
+                        >
+                            <option value="Standard">Standard Logging</option>
+                            <option value="Anonymized">Anonymized Neural Tracking</option>
+                            <option value="Local Only">Zero-Cloud (Local Only)</option>
+                        </select>
+                    </div>
+
+                    <button
+                        disabled={saving}
+                        className="w-full py-4 bg-accent text-white rounded-[20px] font-black text-xs uppercase tracking-[0.2em] shadow-xl shadow-accent/20 hover:opacity-90 transition-all flex items-center justify-center gap-3 group"
+                    >
+                        {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <><ShieldCheck className="w-4 h-4" /> Update Neural Rights</>}
                     </button>
                 </form>
             </div>
@@ -139,7 +281,7 @@ const EditProfileModal = ({ isOpen, onClose, user, onSave }: any) => {
 
 const Settings: React.FC = () => {
     const { user, setUser } = useAuthStore();
-    const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+    const [modal, setModal] = useState<null | 'profile' | 'alerts' | 'system'>(null);
 
     return (
         <div className="p-8 max-w-3xl mx-auto space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
@@ -158,14 +300,14 @@ const Settings: React.FC = () => {
                     <p className="text-slate-400 text-xs font-medium mb-3">{user?.email}</p>
                     <span className="bg-primary px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest text-white shadow-lg shadow-primary/20 flex items-center gap-1.5 w-fit">
                         <Sparkles className="w-3 h-3" />
-                        Premium Intelligence
+                        {user?.subscription_tier || 'Premium Intelligence'}
                     </span>
                 </div>
                 <button
-                    onClick={() => setIsEditModalOpen(true)}
+                    onClick={() => setModal('profile')}
                     className="ml-auto bg-white/5 hover:bg-white/10 p-4 rounded-3xl border border-white/5 transition-colors"
                 >
-                    <ChevronRight className="w-5 h-5" />
+                    <ChevronRight className="w-5 h-5 text-slate-400" />
                 </button>
             </div>
 
@@ -177,18 +319,19 @@ const Settings: React.FC = () => {
                             icon={User}
                             title="Biological Profile"
                             sub={`${user?.height || '--'}cm / ${user?.weight || '--'}kg. ${user?.daily_calorie_target || '--'} kcal cap.`}
-                            onClick={() => setIsEditModalOpen(true)}
+                            onClick={() => setModal('profile')}
                         />
                         <SettingItem
                             icon={MapPin}
                             title="Regional Intelligence"
-                            sub={`Currently set to ${user?.country || 'Kenya'}. Syncs local food prices.`}
-                            onClick={() => setIsEditModalOpen(true)}
+                            sub={`Currently synchronized with ${user?.country || 'Kenya'}.`}
+                            onClick={() => setModal('profile')}
                         />
                         <SettingItem
                             icon={Shield}
                             title="Data & Privacy"
-                            sub="Manage anonymized neural health tracking settings."
+                            sub={`Privacy Mode: ${user?.privacy_mode || 'Anonymized'}`}
+                            onClick={() => setModal('system')}
                         />
                     </div>
                 </div>
@@ -199,27 +342,43 @@ const Settings: React.FC = () => {
                         <SettingItem
                             icon={Bell}
                             title="Alert Thresholds"
-                            sub="Configure risk notifications for sodium, sugar, and budget."
+                            sub={`Na: ${user?.sodium_target || 2300}mg | Sugar: ${user?.sugar_target || 50}g`}
                             color="bg-secondary/5 text-secondary border-secondary/10"
+                            onClick={() => setModal('alerts')}
                         />
                         <SettingItem
                             icon={CreditCard}
                             title="Subscription & Billing"
-                            sub="Current plan: Intelligence Tier Annual."
+                            sub={`Plan: ${user?.subscription_tier || 'Premium Intelligence'}`}
                             color="bg-accent/5 text-accent border-accent/10"
+                            onClick={() => setModal('system')}
                         />
                     </div>
                 </div>
             </div>
 
             <div className="flex justify-center pt-4">
-                <p className="text-[10px] font-bold text-slate-300 uppercase tracking-widest italic">Mealer Clinical Edition v1.2.4</p>
+                <p className="text-[10px] font-bold text-slate-300 uppercase tracking-widest italic">Mealer Clinical Edition v1.2.5</p>
             </div>
 
             <EditProfileModal
-                isOpen={isEditModalOpen}
+                isOpen={modal === 'profile'}
                 user={user}
-                onClose={() => setIsEditModalOpen(false)}
+                onClose={() => setModal(null)}
+                onSave={(updatedUser: any) => setUser(updatedUser)}
+            />
+
+            <AlertThresholdsModal
+                isOpen={modal === 'alerts'}
+                user={user}
+                onClose={() => setModal(null)}
+                onSave={(updatedUser: any) => setUser(updatedUser)}
+            />
+
+            <SystemPreferencesModal
+                isOpen={modal === 'system'}
+                user={user}
+                onClose={() => setModal(null)}
                 onSave={(updatedUser: any) => setUser(updatedUser)}
             />
         </div>
@@ -227,3 +386,4 @@ const Settings: React.FC = () => {
 };
 
 export default Settings;
+

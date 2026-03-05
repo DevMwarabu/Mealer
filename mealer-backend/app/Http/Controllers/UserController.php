@@ -19,6 +19,8 @@ class UserController extends Controller
             'country' => 'sometimes|string|max:255',
             'sodium_target' => 'sometimes|integer|min:0|max:10000',
             'sugar_target' => 'sometimes|integer|min:0|max:1000',
+            'subscription_tier' => 'sometimes|string|max:255',
+            'privacy_mode' => 'sometimes|string|max:255',
         ]);
 
         $user->update($validated);

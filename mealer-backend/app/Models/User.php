@@ -33,6 +33,8 @@ class User extends Authenticatable
         'level',
         'sodium_target',
         'sugar_target',
+        'subscription_tier',
+        'privacy_mode',
     ];
 
     /**
