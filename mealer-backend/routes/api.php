@@ -6,6 +6,7 @@ use App\Http\Controllers\MealController;
 use App\Http\Controllers\GroceryController;
 use App\Http\Controllers\HealthController;
 use App\Http\Controllers\PantryController;
+use App\Http\Controllers\SimulationController;
 use App\Http\Controllers\GamificationController;
 use App\Http\Controllers\RecipeController;
 use App\Http\Controllers\AutoPlanController;
@@ -57,6 +58,11 @@ Route::middleware(['auth:sanctum'])->group(function () {
     Route::apiResource('/pantry', PantryController::class)->only(['index', 'store', 'update', 'destroy']);
     Route::get('/gamification/dashboard', [GamificationController::class, 'dashboard']);
     Route::get('/community/feed', [RecipeController::class, 'communityFeed']);
+
+    // Simulation Engine
+    Route::post('/simulations/run', [SimulationController::class, 'run']);
+    Route::post('/simulations/apply', [SimulationController::class, 'apply']);
+    Route::get('/simulations/active', [SimulationController::class, 'active']);
 
     // Existing protected routes remain here (meals, groceries, health, etc)...
 });
