@@ -6,7 +6,9 @@ const PredictiveInsights: React.FC<{ data: any }> = ({ data }) => {
     if (!data) return null;
 
     return (
-        <div className="bg-slate-900 rounded-[32px] border border-white/10 shadow-2xl overflow-hidden relative group">
+        <div className="bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 rounded-[32px] border border-slate-700/50 shadow-2xl shadow-slate-900/40 overflow-hidden relative group">
+            <div className="absolute top-0 right-0 w-64 h-64 bg-primary/20 rounded-full blur-[100px] pointer-events-none group-hover:bg-primary/30 transition-colors duration-1000" />
+
             <div className="absolute top-0 right-0 p-8 opacity-10 group-hover:opacity-20 transition-opacity">
                 <Zap className="w-32 h-32 text-primary" />
             </div>
@@ -14,10 +16,10 @@ const PredictiveInsights: React.FC<{ data: any }> = ({ data }) => {
             <div className="p-8 relative z-10">
                 <div className="flex justify-between items-start mb-8">
                     <div>
-                        <h3 className="text-white font-bold text-xl tracking-tight">90-Day Trajectory</h3>
-                        <p className="text-primary text-[10px] font-bold uppercase tracking-widest mt-1">AI Predictive Modeling</p>
+                        <h3 className="text-white font-black text-xl tracking-tight">90-Day Trajectory</h3>
+                        <p className="text-primary text-[9px] font-black uppercase tracking-widest mt-1">AI Predictive Modeling</p>
                     </div>
-                    <div className="p-3 bg-primary/10 text-primary rounded-2xl border border-primary/20">
+                    <div className="p-3 bg-primary/20 text-primary rounded-2xl border border-primary/30 shadow-inner">
                         <TrendingDown className="w-5 h-5" />
                     </div>
                 </div>

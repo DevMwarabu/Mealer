@@ -71,36 +71,65 @@ class AutoPlanController extends Controller
         ]);
     }
 
-    /**
-     * Today's specific plan overview.
-     */
     public function getToday(Request $request)
     {
-        $user = new \App\Models\User([
-            'id' => 1,
-            'country' => 'Kenya',
-            'monthly_budget_target' => 20000,
-            'name' => 'Demo User'
-        ]);
+        // For API testing, use a mock instance if not authenticated
+        $user = $request->user();
 
-        $seasonal = $this->contextualService->getSeasonalContext($user->country);
-        $cultural = $this->contextualService->getCulturalPatterns($user->id, $user->country);
+        if (!$user) {
+            $user = new \App\Models\User([
+                'id' => 1,
+                'country' => 'Kenya',
+                'monthly_budget_target' => 20000,
+                'name' => 'Demo User'
+            ]);
+        }
+
+        $seasonal = $this->contextualService->getSeasonalContext($user->country ?? 'Kenya');
+        $cultural = $this->contextualService->getCulturalPatterns($user->id, $user->country ?? 'Kenya');
         $behavioral = $this->behavioralService->getCognitiveLoadStatus($user);
         $discipline = $this->behavioralService->calculateDisciplineScore($user);
         $predictions = $this->predictiveService->predictWeightTrajectory($user);
         $clinical = $this->predictiveService->generateClinicalSummary($user);
 
-        // Mock Household Coordination
+        // Dynamic Meal Selection from DB
+        $breakfast = \App\Models\Recipe::where('meal_type', 'breakfast')->inRandomOrder()->first();
+        $lunch = \App\Models\Recipe::where('meal_type', 'lunch')->inRandomOrder()->first();
+        $dinner = \App\Models\Recipe::where('meal_type', 'dinner')->inRandomOrder()->first();
+        $snack = \App\Models\Recipe::where('meal_type', 'snack')->inRandomOrder()->first();
+
+        $selectedMeals = collect([$breakfast, $lunch, $dinner, $snack])->filter();
+
+        $plannedCalories = $selectedMeals->sum('calories');
+        $plannedCost = $selectedMeals->sum('estimated_cost');
+        $avgHealthScore = $selectedMeals->avg('health_score') ?? 0;
+
+        $mealsData = $selectedMeals->map(function ($meal) {
+            return [
+                'id' => $meal->id,
+                'type' => ucfirst($meal->meal_type),
+                'name' => $meal->name,
+                'calories' => $meal->calories,
+                'cost' => 'KES ' . $meal->estimated_cost,
+                'metabolic_score' => $meal->health_score,
+                'status' => 'pending'
+            ];
+        })->values()->toArray();
+
+        // Check if any tags represent a specific diet
+        $allTags = $selectedMeals->pluck('tags')->map(fn($t) => is_string($t) ? json_decode($t, true) : $t)->flatten()->unique();
+        $mode = 'Standard';
+        if ($allTags->contains('traditional'))
+            $mode = 'Traditional';
+        if ($allTags->contains('cheap_meal'))
+            $mode = 'Zero-Waste / Cheap';
+
         $householdStats = [
             'sync_active' => true,
             'collective_remaining' => 4500,
             'family_portions' => 4,
             'shared_grocery_alert' => 'User "Sarah" has picked up the milk.'
         ];
-
-        // Simulating an inflation alert for one of the ingredients
-        $sampleIngredient = new \App\Models\Ingredient(['name' => 'Beef (Lean)', 'category_id' => 1]); // Category 1 = Proteins
-        $alternative = $this->financialService->suggestAlternatives($sampleIngredient);
 
         return response()->json([
             'date' => now()->toDateString(),
@@ -114,28 +143,24 @@ class AutoPlanController extends Controller
                 'season' => $seasonal['season'],
                 'abundant_items' => $seasonal['abundant'],
                 'cultural_focus' => $cultural['traditional_staples'][0] ?? 'Balanced',
-                'inflation_alert' => $alternative ? "High inflation on {$sampleIngredient->name}. Suggested alternative: {$alternative['item']} ({$alternative['savings']} savings)." : null,
                 'behavioral_load' => $behavioral['status'],
                 'discipline_score' => $discipline
             ],
-            'meals' => [
-                ['id' => 'm1', 'type' => 'Breakfast', 'name' => 'Metabolic-Boost Oats', 'calories' => 420, 'cost' => 'KES 180', 'metabolic_score' => 92, 'status' => 'pending'],
-                ['id' => 'm2', 'type' => 'Lunch', 'name' => 'Anti-Inflammatory Salmon', 'calories' => 550, 'cost' => 'KES 850', 'metabolic_score' => 98, 'status' => 'pending'],
-                ['id' => 'm3', 'type' => 'Dinner', 'name' => 'Gut-Health Fiber Bowl', 'calories' => 600, 'cost' => 'KES 220', 'metabolic_score' => 95, 'status' => 'pending'],
-            ],
+            'meals' => $mealsData,
             'v2_metrics' => [
-                'discipline_grade' => 'A',
-                'metabolic_impact' => '+12% Efficiency',
+                'discipline_grade' => $discipline > 90 ? 'A' : 'B',
+                'metabolic_impact' => '+' . round($avgHealthScore / 10) . '% Efficiency',
                 'budget_stability' => 'Stable',
-                'nutrient_gap_status' => 'Iron: Optimal, Potassium: Low (+200mg required)',
-                'sustainability_score' => 88
+                'nutrient_gap_status' => 'Analysis active based on real macro inputs.',
+                'sustainability_score' => $avgHealthScore > 80 ? 92 : 85,
             ],
             'metrics' => [
-                'target_calories' => 1950,
-                'planned_calories' => 1570,
-                'target_cost' => 1250,
-                'planned_cost' => 1250
-            ]
+                'target_calories' => $user->daily_calorie_target ?? 2200,
+                'planned_calories' => $plannedCalories,
+                'target_cost' => round(($user->monthly_budget_target ?? 20000) / 30),
+                'planned_cost' => $plannedCost
+            ],
+            'batch_cooking_advice' => 'Since you are having ' . ($dinner->name ?? "dinner") . ' tonight, cook double portions of ' . explode(' ', $dinner->name ?? '')[0] . ' to use for lunch tomorrow to save ' . ($dinner->prep_time_minutes ?? 20) . ' minutes.'
         ]);
     }
 

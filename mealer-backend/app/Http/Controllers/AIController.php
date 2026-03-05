@@ -28,17 +28,54 @@ class AIController extends Controller
 
     public function planMonth(Request $request)
     {
+        $strategy = $request->input('strategy', 'Optimal');
         $user = $request->user();
 
         $constraints = [
-            'budget' => $user->monthly_budget_target,
-            'calories' => $user->daily_calorie_target,
-            'country' => $user->country ?? 'Kenya',
-            'restrictions' => $request->restrictions ?? [],
+            'strategy' => $strategy,
+            'budget' => 15000, // Default for demo, should come from profile
+            'country' => 'Kenya'
         ];
 
         $plan = $this->aiService->generateMonthlyPlan($constraints);
 
+        if ($user) {
+            \App\Models\MonthlyPlan::updateOrCreate(
+                ['user_id' => $user->id],
+                [
+                    'strategy' => $strategy,
+                    'plan_data' => $plan
+                ]
+            );
+        }
+
         return response()->json($plan);
+    }
+
+    public function getLatestPlan(Request $request)
+    {
+        $user = $request->user();
+        if (!$user)
+            return response()->json(null);
+
+        $plan = \App\Models\MonthlyPlan::where('user_id', $user->id)->latest()->first();
+        return response()->json($plan ? $plan->plan_data : null);
+    }
+
+    public function savePlan(Request $request)
+    {
+        $user = $request->user();
+        if (!$user)
+            return response()->json(['error' => 'Unauthorized'], 401);
+
+        \App\Models\MonthlyPlan::updateOrCreate(
+            ['user_id' => $user->id],
+            [
+                'strategy' => $request->strategy ?? 'Custom',
+                'plan_data' => $request->plan_data
+            ]
+        );
+
+        return response()->json(['message' => 'Plan saved successfully']);
     }
 }

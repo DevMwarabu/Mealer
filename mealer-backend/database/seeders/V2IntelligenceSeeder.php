@@ -26,7 +26,7 @@ class V2IntelligenceSeeder extends Seeder
         $user = User::create([
             'name' => 'Mealer Admin',
             'email' => 'admin@mealer.com',
-            'password' => 'password', // Will be hashed by model cast
+            'password' => 'password', // Model 'hashed' cast will bcrypt this automatically
             'country' => 'Kenya',
             'daily_calorie_target' => 2200,
             'monthly_budget_target' => 20000,

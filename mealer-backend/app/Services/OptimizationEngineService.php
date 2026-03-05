@@ -52,10 +52,7 @@ class OptimizationEngineService
 
     private function generateOptimizedDay($user, $constraints)
     {
-        // In a real system, this would be a linear programming solver or a greedy heuristic.
-        // We select recipes that fit the time, cost, and nutrient constraints.
-
-        return [
+        $dayPlan = [
             'meals' => [
                 ['type' => 'Breakfast', 'recipe' => 'AI Optimized Oats', 'cost' => 120, 'metabolic_impact' => 'Medium'],
                 ['type' => 'Lunch', 'recipe' => 'Batch Prepared Salad', 'cost' => 300, 'metabolic_impact' => 'Low'],
@@ -63,7 +60,20 @@ class OptimizationEngineService
             ],
             'cost' => 870,
             'metabolic_score' => 91,
-            'time_spent' => 25
+            'time_spent' => 25,
+            'batch_cooking_advice' => null,
+            'leftover_reuse' => null
         ];
+
+        // Logic for proactive cooking advice
+        if ($constraints['max_time'] > 60) {
+            $dayPlan['batch_cooking_advice'] = "You have extra time today. Consider batch-cooking 'Lentil Stew' for Tuesday's high-load day.";
+        }
+
+        if (now()->format('N') >= 5) { // Weekend prep
+            $dayPlan['batch_cooking_advice'] = "Weekend detected. Prep protein bases (Nyama Choma/Chicken) now to reduce next week's meal prep by 40%.";
+        }
+
+        return $dayPlan;
     }
 }

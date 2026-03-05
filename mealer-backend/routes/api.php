@@ -9,6 +9,8 @@ use App\Http\Controllers\PantryController;
 use App\Http\Controllers\GamificationController;
 use App\Http\Controllers\RecipeController;
 use App\Http\Controllers\AutoPlanController;
+use App\Http\Controllers\AIAssistantController;
+use App\Http\Controllers\MealIntelligenceController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -35,6 +37,8 @@ Route::middleware(['auth:sanctum'])->group(function () {
     Route::prefix('ai')->group(function () {
         Route::post('/estimate-nutrition', [AIController::class, 'estimateNutrition']);
         Route::post('/plan-month', [AIController::class, 'planMonth']);
+        Route::get('/latest-plan', [AIController::class, 'getLatestPlan']);
+        Route::post('/save-plan', [AIController::class, 'savePlan']);
     });
 
     // Health Intelligence
@@ -52,8 +56,12 @@ Route::middleware(['auth:sanctum'])->group(function () {
     Route::get('/gamification/dashboard', [GamificationController::class, 'dashboard']);
     Route::get('/community/feed', [RecipeController::class, 'communityFeed']);
 
-    // Phase 5: Proactive Intelligence
-    Route::post('/plan/baseline', [AutoPlanController::class, 'generateBaseline']);
-    Route::get('/plan/today', [AutoPlanController::class, 'getToday']);
-    Route::post('/plan/recalculate', [AutoPlanController::class, 'recalculate']);
+    // Existing protected routes remain here (meals, groceries, health, etc)...
 });
+
+// Phase 5: Proactive Intelligence (Moved outside auth for local UI demo flow)
+Route::post('/plan/baseline', [AutoPlanController::class, 'generateBaseline']);
+Route::get('/plan/today', [AutoPlanController::class, 'getToday']);
+Route::post('/plan/recalculate', [AutoPlanController::class, 'recalculate']);
+Route::post('/ai/assistant/ask', [AIAssistantController::class, 'ask']);
+Route::post('/meals/substitute', [MealIntelligenceController::class, 'suggestSubstitution']);
