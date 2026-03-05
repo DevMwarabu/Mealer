@@ -43,6 +43,9 @@ Route::middleware(['auth:sanctum'])->group(function () {
         Route::post('/plan-month', [AIController::class, 'planMonth']);
         Route::get('/latest-plan', [AIController::class, 'getLatestPlan']);
         Route::post('/save-plan', [AIController::class, 'savePlan']);
+        Route::post('/voice-log', [AIController::class, 'voiceLog']);
+        Route::post('/photo-scan', [AIController::class, 'photoScan']);
+        Route::post('/barcode-scan', [AIController::class, 'barcodeScan']);
     });
 
     // Health Intelligence

@@ -78,4 +78,25 @@ class AIController extends Controller
 
         return response()->json(['message' => 'Plan saved successfully']);
     }
+
+    public function voiceLog(Request $request)
+    {
+        // Simulates audio transcription + extraction
+        $result = $this->aiService->estimateMealNutrition("Voice Transcription: I had a large bowl of lentil soup with two slices of rye bread.", $request->user()?->country);
+        return response()->json($result);
+    }
+
+    public function photoScan(Request $request)
+    {
+        // Simulates computer vision analysis
+        $result = $this->aiService->estimateMealNutrition("Vision Analysis: Detected Grilled Salmon with Steamed Broccoli and Quinoa.", $request->user()?->country);
+        return response()->json($result);
+    }
+
+    public function barcodeScan(Request $request)
+    {
+        // Simulates UPC lookup
+        $result = $this->aiService->estimateMealNutrition("Barcode Lookup: UP-7781023 (Organic Almond Milk - Unsweetened)", $request->user()?->country);
+        return response()->json($result);
+    }
 }
