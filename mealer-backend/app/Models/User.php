@@ -26,6 +26,9 @@ class User extends Authenticatable
         'monthly_budget_target',
         'height',
         'weight',
+        'country',
+        'household_id',
+        'discipline_score',
     ];
 
     /**

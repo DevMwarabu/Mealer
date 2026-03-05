@@ -62,6 +62,7 @@ const Dashboard: React.FC = () => {
                 ]);
                 setHealthData(healthRes.data);
                 setDailyPlan(planRes.data);
+                console.log('V2 Dashboard Payload:', planRes.data);
             } catch (err) {
                 console.error('Failed to fetch dashboard data', err);
             } finally {
@@ -99,8 +100,9 @@ const Dashboard: React.FC = () => {
                             </div>
                         )}
                     </div>
-                    <h1 className="text-3xl font-bold text-slate-900 tracking-tight">
+                    <h1 className="text-3xl font-bold text-slate-900 tracking-tight flex items-center gap-3">
                         Today's Intelligence
+                        <span className="px-2 py-0.5 bg-primary text-white text-[9px] font-black rounded uppercase tracking-tighter animate-pulse">V2 Active</span>
                     </h1>
                     <p className="text-slate-500 mt-2 font-medium text-sm">
                         Welcome back, {user?.name?.split(' ')[0] || 'User'}. Your plan is <span className="text-primary font-bold">{dailyPlan?.v2_metrics?.metabolic_impact}</span> more efficient today.
@@ -120,6 +122,49 @@ const Dashboard: React.FC = () => {
                     </button>
                 </div>
             </header>
+
+            {/* V2 Intelligence Grid - Moved to Top for Visibility */}
+            <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
+                <div className="lg:col-span-1">
+                    <HealthScore
+                        score={healthData?.health_score || 0}
+                        status={healthData?.status || 'Active'}
+                    />
+                </div>
+                <div className="lg:col-span-1">
+                    <HouseholdIntelligence data={dailyPlan?.household} />
+                </div>
+                <div className="lg:col-span-2 grid grid-cols-2 md:grid-cols-2 gap-6">
+                    <StatCard
+                        title="Metabolic Pulse"
+                        value={dailyPlan?.v2_metrics?.metabolic_impact || '0%'}
+                        sub={<><span className="text-success font-bold">+12%</span> efficiency gains</>}
+                        icon={Activity}
+                        color="success"
+                    />
+                    <StatCard
+                        title="Budget Stability"
+                        value={dailyPlan?.v2_metrics?.budget_stability || 'Stable'}
+                        sub="Inflation sensitivity active"
+                        icon={TrendingDown}
+                        color="primary"
+                    />
+                    <StatCard
+                        title="Sustainability Score"
+                        value={`${dailyPlan?.v2_metrics?.sustainability_score || 0}%`}
+                        sub="Low carbon sourcing"
+                        icon={TrendingDown}
+                        color="secondary"
+                    />
+                    <StatCard
+                        title="Behavioral Index"
+                        value={dailyPlan?.context?.discipline_score || '98.2'}
+                        sub={dailyPlan?.context?.behavioral_load || 'Normal Load'}
+                        icon={Award}
+                        color="accent"
+                    />
+                </div>
+            </div>
 
             {/* Smart Daily Plan - PHASE 5 CORE */}
             {dailyPlan && (
@@ -207,48 +252,7 @@ const Dashboard: React.FC = () => {
                 </div>
             )}
 
-            {/* V2 Intelligence Grid */}
-            <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
-                <div className="lg:col-span-1">
-                    <HealthScore
-                        score={healthData?.health_score || 0}
-                        status={healthData?.status || 'N/A'}
-                    />
-                </div>
-                <div className="lg:col-span-1">
-                    <HouseholdIntelligence data={dailyPlan?.household} />
-                </div>
-                <div className="lg:col-span-2 grid grid-cols-2 md:grid-cols-2 gap-6">
-                    <StatCard
-                        title="Metabolic Pulse"
-                        value={dailyPlan?.v2_metrics?.metabolic_impact || '0%'}
-                        sub={<><span className="text-success font-bold">+12%</span> efficiency gains</>}
-                        icon={Activity}
-                        color="success"
-                    />
-                    <StatCard
-                        title="Budget Stability"
-                        value={dailyPlan?.v2_metrics?.budget_stability || 'Stable'}
-                        sub="Inflation sensitivity active"
-                        icon={TrendingDown}
-                        color="primary"
-                    />
-                    <StatCard
-                        title="Sustainability Score"
-                        value={`${dailyPlan?.v2_metrics?.sustainability_score || 0}%`}
-                        sub="Low carbon sourcing"
-                        icon={TrendingDown}
-                        color="secondary"
-                    />
-                    <StatCard
-                        title="Behavioral Index"
-                        value={dailyPlan?.context?.discipline_score || '98.2'}
-                        sub={dailyPlan?.context?.behavioral_load || 'Normal Load'}
-                        icon={Award}
-                        color="accent"
-                    />
-                </div>
-            </div>
+
 
             <div className="bg-slate-900 p-8 rounded-[32px] space-y-6 text-white shadow-xl relative overflow-hidden group">
                 <div className="absolute top-[-20%] right-[-20%] w-64 h-64 bg-primary/20 rounded-full blur-[100px] group-hover:scale-110 transition-transform duration-[5s]" />
