@@ -1,39 +1,66 @@
 import React, { useState, useEffect } from 'react';
-import { ShoppingCart, Plus, Package, Calendar, DollarSign, ArrowUpRight, Loader2 } from 'lucide-react';
+import { ShoppingCart, Plus, Package, Calendar, DollarSign, ArrowUpRight, Loader2, Edit2, Trash2 } from 'lucide-react';
 import api from '../../api/axios';
+import AddPurchaseModal from './AddPurchaseModal';
+import EditItemModal from './EditItemModal';
+import DeleteConfirmModal from './DeleteConfirmModal';
 
 const GroceryList: React.FC = () => {
     const [groceries, setGroceries] = useState<any[]>([]);
     const [metrics, setMetrics] = useState<any>(null);
     const [loading, setLoading] = useState(true);
+    const [isModalOpen, setIsModalOpen] = useState(false);
+    const [editingItem, setEditingItem] = useState<any>(null);
+    const [itemToDelete, setItemToDelete] = useState<any>(null);
+    const [deletingId, setDeletingId] = useState<number | null>(null);
+
+    const fetchData = async () => {
+        try {
+            const [groceriesRes, metricsRes] = await Promise.all([
+                api.get('/groceries'),
+                api.get('/groceries/metrics')
+            ]);
+
+            // Flatten items for the table
+            const allItems = groceriesRes.data.flatMap((g: any) =>
+                g.items.map((item: any) => ({
+                    ...item,
+                    store: g.store_name,
+                    purchased_at: g.purchased_at
+                }))
+            );
+
+            setGroceries(allItems);
+            setMetrics(metricsRes.data);
+        } catch (err) {
+            console.error('Error fetching grocery data:', err);
+        } finally {
+            setLoading(false);
+        }
+    };
 
     useEffect(() => {
-        const fetchData = async () => {
-            try {
-                const [groceriesRes, metricsRes] = await Promise.all([
-                    api.get('/groceries'),
-                    api.get('/groceries/metrics')
-                ]);
-
-                // Flatten items for the table
-                const allItems = groceriesRes.data.flatMap((g: any) =>
-                    g.items.map((item: any) => ({
-                        ...item,
-                        store: g.store_name,
-                        purchased_at: g.purchased_at
-                    }))
-                );
-
-                setGroceries(allItems);
-                setMetrics(metricsRes.data);
-            } catch (err) {
-                console.error('Error fetching grocery data:', err);
-            } finally {
-                setLoading(false);
-            }
-        };
         fetchData();
     }, []);
+
+    const handleSuccess = () => {
+        fetchData();
+    };
+
+    const confirmDelete = async () => {
+        if (!itemToDelete) return;
+
+        setDeletingId(itemToDelete.id);
+        try {
+            await api.delete(`/grocery-items/${itemToDelete.id}`);
+            handleSuccess();
+            setItemToDelete(null);
+        } catch (err) {
+            console.error('Failed to delete item:', err);
+        } finally {
+            setDeletingId(null);
+        }
+    };
 
     if (loading) {
         return (
@@ -52,11 +79,36 @@ const GroceryList: React.FC = () => {
                         Managing {groceries.length} active items. {metrics?.waste?.total_lost > 0 ? 'Risk detected.' : 'Inventory stable.'}
                     </p>
                 </div>
-                <button className="bg-primary hover:bg-primary/90 text-white px-6 py-3 rounded-xl font-bold shadow-lg shadow-primary/20 flex items-center gap-2 group transition-all active:scale-95 text-sm">
+                <button
+                    onClick={() => setIsModalOpen(true)}
+                    className="bg-primary hover:bg-primary/90 text-white px-6 py-3 rounded-xl font-bold shadow-lg shadow-primary/20 flex items-center gap-2 group transition-all active:scale-95 text-sm"
+                >
                     <Plus className="w-4 h-4" />
                     Add Purchase
                 </button>
             </header>
+
+            <AddPurchaseModal
+                isOpen={isModalOpen}
+                onClose={() => setIsModalOpen(false)}
+                onSuccess={handleSuccess}
+            />
+
+            <EditItemModal
+                isOpen={!!editingItem}
+                item={editingItem}
+                onClose={() => setEditingItem(null)}
+                onSuccess={handleSuccess}
+            />
+
+            <DeleteConfirmModal
+                isOpen={!!itemToDelete}
+                onClose={() => setItemToDelete(null)}
+                onConfirm={confirmDelete}
+                isDeleting={deletingId === itemToDelete?.id}
+                title="Remove Item"
+                message={`Are you sure you want to remove ${itemToDelete?.ingredient?.name || 'this item'} from your inventory?`}
+            />
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                 <div className="bg-white p-6 rounded-3xl border border-slate-100 shadow-sm flex items-center gap-4">
@@ -102,7 +154,7 @@ const GroceryList: React.FC = () => {
                                 <th className="px-6 py-4 text-[10px] font-bold text-slate-400 uppercase tracking-widest">Fiscal Value</th>
                                 <th className="px-6 py-4 text-[10px] font-bold text-slate-400 uppercase tracking-widest">Expiration</th>
                                 <th className="px-6 py-4 text-[10px] font-bold text-slate-400 uppercase tracking-widest">Status</th>
-                                <th className="px-6 py-4"></th>
+                                <th className="px-6 py-4 text-right pr-10 text-[10px] font-bold text-slate-400 uppercase tracking-widest">Actions</th>
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-slate-50">
@@ -130,9 +182,26 @@ const GroceryList: React.FC = () => {
                                         </span>
                                     </td>
                                     <td className="px-6 py-4 text-right">
-                                        <button className="text-slate-300 hover:text-primary transition-colors">
-                                            <ArrowUpRight className="w-4 h-4" />
-                                        </button>
+                                        <div className="flex items-center justify-end gap-2 pr-4">
+                                            <button
+                                                onClick={() => setEditingItem(item)}
+                                                className="p-2 text-slate-300 hover:text-primary hover:bg-primary/5 rounded-lg transition-all"
+                                                title="Edit Item"
+                                            >
+                                                <Edit2 className="w-4 h-4" />
+                                            </button>
+                                            <button
+                                                onClick={() => setItemToDelete(item)}
+                                                disabled={deletingId === item.id}
+                                                className="p-2 text-slate-300 hover:text-danger hover:bg-danger/5 rounded-lg transition-all"
+                                                title="Delete Item"
+                                            >
+                                                {deletingId === item.id ? <Loader2 className="w-4 h-4 animate-spin" /> : <Trash2 className="w-4 h-4" />}
+                                            </button>
+                                            <button className="p-2 text-slate-300 hover:text-slate-600 hover:bg-slate-100 rounded-lg transition-all">
+                                                <ArrowUpRight className="w-4 h-4" />
+                                            </button>
+                                        </div>
                                     </td>
                                 </tr>
                             ))}

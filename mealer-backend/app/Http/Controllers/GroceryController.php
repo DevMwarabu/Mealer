@@ -35,6 +35,11 @@ class GroceryController extends Controller
         ]);
     }
 
+    public function getIngredients(Request $request)
+    {
+        return \App\Models\Ingredient::with('category')->orderBy('name')->get();
+    }
+
     public function store(Request $request)
     {
         $request->validate([

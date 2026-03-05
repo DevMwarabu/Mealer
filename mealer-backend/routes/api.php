@@ -30,8 +30,10 @@ Route::middleware(['auth:sanctum'])->group(function () {
     Route::prefix('groceries')->group(function () {
         Route::get('/', [GroceryController::class, 'index']);
         Route::get('/metrics', [GroceryController::class, 'getMetrics']);
+        Route::get('/ingredients', [GroceryController::class, 'getIngredients']);
         Route::post('/', [GroceryController::class, 'store']);
     });
+    Route::apiResource('grocery-items', \App\Http\Controllers\GroceryItemController::class);
 
     // AI Intelligence
     Route::prefix('ai')->group(function () {
@@ -52,7 +54,7 @@ Route::middleware(['auth:sanctum'])->group(function () {
     });
 
     // Phase 4: Extended Ecosystem
-    Route::get('/pantry', [PantryController::class, 'index']);
+    Route::apiResource('/pantry', PantryController::class)->only(['index', 'store', 'update', 'destroy']);
     Route::get('/gamification/dashboard', [GamificationController::class, 'dashboard']);
     Route::get('/community/feed', [RecipeController::class, 'communityFeed']);
 

@@ -67,11 +67,35 @@ class FinancialIntelligenceService
     }
 
     /**
-     * Calculate ROI on bulk purchases (items with quantity > 1kg/unit).
+     * Calculate ROI on bulk purchases (items with quantity > 1).
      */
     public function getBulkROI(User $user)
     {
-        return 12.4; // Mocked logic: Comparing bulk prices vs historical unit averages
+        $bulkItems = \DB::table('grocery_items')
+            ->join('groceries', 'grocery_items.grocery_id', '=', 'groceries.id')
+            ->where('groceries.user_id', $user->id)
+            ->where('quantity', '>', 1)
+            ->get();
+
+        if ($bulkItems->isEmpty())
+            return 0;
+
+        // ROI calculation based on savings vs historical avg_price from ingredients table
+        $totalSavings = 0;
+        $totalCost = 0;
+
+        foreach ($bulkItems as $item) {
+            $ingredient = \App\Models\Ingredient::find($item->ingredient_id);
+            if ($ingredient && $ingredient->avg_price > 0) {
+                // Approximate unit price in bulk vs standard avg price
+                $unitPriceInBulk = $item->price / $item->quantity;
+                $savings = ($ingredient->avg_price - $unitPriceInBulk) * $item->quantity;
+                $totalSavings += max(0, $savings);
+                $totalCost += $item->price;
+            }
+        }
+
+        return $totalCost > 0 ? round(($totalSavings / $totalCost) * 100, 1) : 0;
     }
 
     /**
@@ -79,10 +103,14 @@ class FinancialIntelligenceService
      */
     public function getNutritionalEfficiency(User $user)
     {
-        $ingredients = \App\Models\Ingredient::orderBy('protein', 'desc')->take(5)->get();
+        $ingredients = \App\Models\Ingredient::where('avg_price', '>', 0)
+            ->orderByRaw('protein / avg_price DESC')
+            ->take(5)
+            ->get();
+
         return $ingredients->map(fn($i) => [
             'name' => $i->name,
-            'score' => $i->avg_price > 0 ? round(($i->protein / $i->avg_price) * 100, 2) : 0
+            'score' => round(($i->protein / $i->avg_price) * 100, 2)
         ]);
     }
 }

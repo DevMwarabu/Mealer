@@ -92,4 +92,9 @@ class User extends Authenticatable
     {
         return $this->hasMany(Alert::class);
     }
+
+    public function pantryItems()
+    {
+        return $this->hasMany(PantryItem::class);
+    }
 }
