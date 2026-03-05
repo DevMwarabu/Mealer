@@ -20,20 +20,43 @@ const MealLogger: React.FC = () => {
     const [estimating, setEstimating] = useState(false);
     const [prediction, setPrediction] = useState<any>(null);
     const [status, setStatus] = useState<'idle' | 'success' | 'error'>('idle');
+    const [interactionMode, setInteractionMode] = useState<null | 'listening' | 'scanning' | 'searching'>(null);
 
-    const handleEstimate = async () => {
-        if (!description) return;
+    const handleEstimate = async (customPath?: string) => {
+        if (!description && !customPath) return;
         setEstimating(true);
         setStatus('idle');
         try {
-            const response = await api.post('/ai/estimate-nutrition', { description });
+            const apiPath = customPath || '/ai/estimate-nutrition';
+            const payload = customPath ? {} : { description };
+            const response = await api.post(apiPath, payload);
             setPrediction(response.data);
+            if (response.data.items?.[0]?.name) {
+                // If it came from voice/photo/barcode, update description with the AI's "found" string
+                setDescription(prev => prev || `Extracted: ${response.data.items.map((i: any) => i.name).join(', ')}`);
+            }
         } catch (err) {
             console.error(err);
             setStatus('error');
         } finally {
             setEstimating(false);
+            setInteractionMode(null);
         }
+    };
+
+    const handleVoiceLog = () => {
+        setInteractionMode('listening');
+        setTimeout(() => handleEstimate('/ai/voice-log'), 2000);
+    };
+
+    const handlePhotoScan = () => {
+        setInteractionMode('scanning');
+        setTimeout(() => handleEstimate('/ai/photo-scan'), 2000);
+    };
+
+    const handleBarcodeScan = () => {
+        setInteractionMode('searching');
+        setTimeout(() => handleEstimate('/ai/barcode-scan'), 2000);
     };
 
     const handleCommit = async () => {
@@ -83,27 +106,39 @@ const MealLogger: React.FC = () => {
                         placeholder="e.g., Two eggs scrambled with one cup of spinach and a small avocado on whole wheat toast..."
                     />
                     <button
-                        onClick={handleEstimate}
+                        onClick={() => handleEstimate()}
                         disabled={estimating || !description}
                         className="absolute bottom-6 right-6 bg-primary text-white px-8 py-4 rounded-[20px] font-bold shadow-lg shadow-primary/20 disabled:opacity-50 hover:bg-primary/90 transition-all flex items-center gap-2 active:scale-95 transition-transform"
                     >
-                        {estimating ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Analyze Stream'}
+                        {estimating && !interactionMode ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Analyze Stream'}
                         <ArrowRight className="w-4 h-4" />
                     </button>
                 </div>
 
                 <div className="flex gap-4">
-                    <button className="flex-1 bg-white border border-slate-100 p-4 rounded-2xl flex flex-col items-center justify-center gap-2 text-slate-400 hover:text-primary hover:border-primary/20 hover:bg-primary/5 transition-all group">
-                        <Mic className="w-6 h-6 group-hover:scale-110 transition-transform" />
-                        <span className="text-[10px] font-bold uppercase tracking-widest">Voice Log</span>
+                    <button
+                        onClick={handleVoiceLog}
+                        disabled={!!interactionMode || estimating}
+                        className={`flex-1 bg-white border border-slate-100 p-4 rounded-2xl flex flex-col items-center justify-center gap-2 transition-all group ${interactionMode === 'listening' ? 'text-primary border-primary ring-4 ring-primary/10 animate-pulse' : 'text-slate-400 hover:text-primary hover:border-primary/20 hover:bg-primary/5'}`}
+                    >
+                        {interactionMode === 'listening' ? <Loader2 className="w-6 h-6 animate-spin" /> : <Mic className="w-6 h-6 group-hover:scale-110 transition-transform" />}
+                        <span className="text-[10px] font-bold uppercase tracking-widest">{interactionMode === 'listening' ? 'Listening...' : 'Voice Log'}</span>
                     </button>
-                    <button className="flex-1 bg-white border border-slate-100 p-4 rounded-2xl flex flex-col items-center justify-center gap-2 text-slate-400 hover:text-primary hover:border-primary/20 hover:bg-primary/5 transition-all group">
-                        <Camera className="w-6 h-6 group-hover:scale-110 transition-transform" />
-                        <span className="text-[10px] font-bold uppercase tracking-widest">Photo Scan</span>
+                    <button
+                        onClick={handlePhotoScan}
+                        disabled={!!interactionMode || estimating}
+                        className={`flex-1 bg-white border border-slate-100 p-4 rounded-2xl flex flex-col items-center justify-center gap-2 transition-all group ${interactionMode === 'scanning' ? 'text-primary border-primary ring-4 ring-primary/10 animate-pulse' : 'text-slate-400 hover:text-primary hover:border-primary/20 hover:bg-primary/5'}`}
+                    >
+                        {interactionMode === 'scanning' ? <Loader2 className="w-6 h-6 animate-spin" /> : <Camera className="w-6 h-6 group-hover:scale-110 transition-transform" />}
+                        <span className="text-[10px] font-bold uppercase tracking-widest">{interactionMode === 'scanning' ? 'Scanning...' : 'Photo Scan'}</span>
                     </button>
-                    <button className="flex-1 bg-white border border-slate-100 p-4 rounded-2xl flex flex-col items-center justify-center gap-2 text-slate-400 hover:text-primary hover:border-primary/20 hover:bg-primary/5 transition-all group">
-                        <ScanBarcode className="w-6 h-6 group-hover:scale-110 transition-transform" />
-                        <span className="text-[10px] font-bold uppercase tracking-widest">Barcode</span>
+                    <button
+                        onClick={handleBarcodeScan}
+                        disabled={!!interactionMode || estimating}
+                        className={`flex-1 bg-white border border-slate-100 p-4 rounded-2xl flex flex-col items-center justify-center gap-2 transition-all group ${interactionMode === 'searching' ? 'text-primary border-primary ring-4 ring-primary/10 animate-pulse' : 'text-slate-400 hover:text-primary hover:border-primary/20 hover:bg-primary/5'}`}
+                    >
+                        {interactionMode === 'searching' ? <Loader2 className="w-6 h-6 animate-spin" /> : <ScanBarcode className="w-6 h-6 group-hover:scale-110 transition-transform" />}
+                        <span className="text-[10px] font-bold uppercase tracking-widest">{interactionMode === 'searching' ? 'Searching...' : 'Barcode'}</span>
                     </button>
                 </div>
 
