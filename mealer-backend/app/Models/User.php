@@ -29,6 +29,8 @@ class User extends Authenticatable
         'country',
         'household_id',
         'discipline_score',
+        'gamification_points',
+        'level',
     ];
 
     /**
@@ -55,7 +57,21 @@ class User extends Authenticatable
             'monthly_budget_target' => 'decimal:2',
             'height' => 'decimal:2',
             'weight' => 'decimal:2',
+            'gamification_points' => 'integer',
+            'level' => 'integer',
         ];
+    }
+
+    public function badges()
+    {
+        return $this->belongsToMany(Badge::class, 'user_badges')->withPivot('earned_at');
+    }
+
+    public function challenges()
+    {
+        return $this->belongsToMany(Challenge::class, 'user_challenges')
+            ->withPivot('status', 'progress', 'completed_at')
+            ->withTimestamps();
     }
 
     public function meals()
