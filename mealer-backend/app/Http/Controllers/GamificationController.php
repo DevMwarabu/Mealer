@@ -28,7 +28,7 @@ class GamificationController extends Controller
                 'name' => $b->name,
                 'icon' => $b->icon,
                 'description' => $b->description,
-                'earned_date' => $b->pivot->earned_at ? $b->pivot->earned_at->format('Y-m-d') : null
+                'earned_date' => $b->pivot->earned_at ? \Carbon\Carbon::parse($b->pivot->earned_at)->format('Y-m-d') : null
             ];
         });
 

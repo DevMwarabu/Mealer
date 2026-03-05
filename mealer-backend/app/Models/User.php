@@ -31,6 +31,8 @@ class User extends Authenticatable
         'discipline_score',
         'gamification_points',
         'level',
+        'sodium_target',
+        'sugar_target',
     ];
 
     /**
@@ -59,6 +61,8 @@ class User extends Authenticatable
             'weight' => 'decimal:2',
             'gamification_points' => 'integer',
             'level' => 'integer',
+            'sodium_target' => 'integer',
+            'sugar_target' => 'integer',
         ];
     }
 

@@ -22,8 +22,23 @@ const Rewards: React.FC = () => {
 
     if (loading) {
         return (
-            <div className="h-full w-full flex items-center justify-center">
+            <div className="h-full w-full flex items-center justify-center p-20">
                 <Loader2 className="w-8 h-8 text-primary animate-spin" />
+            </div>
+        );
+    }
+
+    if (!data) {
+        return (
+            <div className="h-full w-full flex flex-col items-center justify-center p-20 text-slate-500">
+                <Award className="w-12 h-12 mb-4 opacity-20" />
+                <p className="font-bold">Intelligence feed unavailable.</p>
+                <button
+                    onClick={() => window.location.reload()}
+                    className="mt-4 px-4 py-2 bg-primary/10 text-primary rounded-lg font-bold text-sm"
+                >
+                    Retry Connection
+                </button>
             </div>
         );
     }

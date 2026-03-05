@@ -7,6 +7,10 @@ interface User {
     daily_calorie_target?: number;
     monthly_budget_target?: number;
     country?: string;
+    height?: number;
+    weight?: number;
+    sodium_target?: number;
+    sugar_target?: number;
 }
 
 interface AuthState {
@@ -14,6 +18,7 @@ interface AuthState {
     token: string | null;
     isAuthenticated: boolean;
     setAuth: (user: User, token: string) => void;
+    setUser: (user: User) => void;
     logout: () => void;
 }
 
@@ -34,6 +39,10 @@ export const useAuthStore = create<AuthState>((set) => ({
         localStorage.setItem('token', token);
         localStorage.setItem('user', JSON.stringify(user));
         set({ user, token, isAuthenticated: true });
+    },
+    setUser: (user) => {
+        localStorage.setItem('user', JSON.stringify(user));
+        set({ user });
     },
     logout: () => {
         localStorage.removeItem('token');
