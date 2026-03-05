@@ -59,6 +59,8 @@ Route::middleware(['auth:sanctum'])->group(function () {
     Route::apiResource('/pantry', PantryController::class)->only(['index', 'store', 'update', 'destroy']);
     Route::get('/gamification/dashboard', [GamificationController::class, 'dashboard']);
     Route::get('/community/feed', [RecipeController::class, 'communityFeed']);
+    Route::post('/community/recipes/{id}/like', [RecipeController::class, 'toggleLike']);
+    Route::post('/community/recipes/{id}/publish', [RecipeController::class, 'publish']);
 
     // Simulation Engine
     Route::post('/simulations/run', [SimulationController::class, 'run']);

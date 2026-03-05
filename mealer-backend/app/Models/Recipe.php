@@ -11,17 +11,26 @@ class Recipe extends Model
 
     protected $fillable = [
         'user_id',
-        'title',
+        'name',
         'description',
         'instructions',
-        'prep_time',
-        'difficulty',
-        'ai_generated',
+        'health_score',
+        'estimated_cost',
+        'likes',
+        'views',
+        'tags',
+        'is_public',
+        'is_generated',
     ];
 
     protected $casts = [
-        'prep_time' => 'integer',
-        'ai_generated' => 'boolean',
+        'health_score' => 'integer',
+        'estimated_cost' => 'decimal:2',
+        'likes' => 'integer',
+        'views' => 'integer',
+        'tags' => 'array',
+        'is_public' => 'boolean',
+        'is_generated' => 'boolean',
     ];
 
     public function user()

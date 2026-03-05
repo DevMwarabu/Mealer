@@ -6,23 +6,39 @@ const Community: React.FC = () => {
     const [feed, setFeed] = useState<any>(null);
     const [loading, setLoading] = useState(true);
 
+    const fetchFeed = async () => {
+        try {
+            const res = await api.get('/community/feed');
+            setFeed(res.data);
+        } catch (err) {
+            console.error(err);
+        } finally {
+            setLoading(false);
+        }
+    };
+
     useEffect(() => {
-        const fetchFeed = async () => {
-            try {
-                const res = await api.get('/community/feed');
-                setFeed(res.data);
-            } catch (err) {
-                console.error(err);
-            } finally {
-                setLoading(false);
-            }
-        };
         fetchFeed();
     }, []);
 
-    if (loading) {
+    const handleLike = async (recipeId: number) => {
+        try {
+            const res = await api.post(`/community/recipes/${recipeId}/like`);
+            // Optimistic update
+            setFeed((prev: any) => ({
+                ...prev,
+                trending: prev.trending.map((r: any) =>
+                    r.id === recipeId ? { ...r, likes: res.data.likes_count, liked: res.data.liked } : r
+                )
+            }));
+        } catch (err) {
+            console.error('Failed to like recipe:', err);
+        }
+    };
+
+    if (loading || !feed) {
         return (
-            <div className="h-full w-full flex items-center justify-center">
+            <div className="h-full w-full flex items-center justify-center p-20">
                 <Loader2 className="w-8 h-8 text-primary animate-spin" />
             </div>
         );
@@ -77,8 +93,11 @@ const Community: React.FC = () => {
                             </div>
 
                             <div className="flex items-center gap-4 pt-4 border-t border-slate-50">
-                                <button className="flex items-center gap-1.5 text-slate-400 hover:text-danger font-bold text-sm transition-colors">
-                                    <Heart className="w-4 h-4" /> {recipe.likes}
+                                <button
+                                    onClick={() => handleLike(recipe.id)}
+                                    className={`flex items-center gap-1.5 font-bold text-sm transition-colors ${recipe.liked ? 'text-danger' : 'text-slate-400 hover:text-danger'}`}
+                                >
+                                    <Heart className={`w-4 h-4 ${recipe.liked ? 'fill-current' : ''}`} /> {recipe.likes}
                                 </button>
                                 <button className="flex items-center gap-1.5 text-slate-400 hover:text-primary font-bold text-sm transition-colors">
                                     <Share2 className="w-4 h-4" /> Share
@@ -86,6 +105,12 @@ const Community: React.FC = () => {
                             </div>
                         </div>
                     ))}
+                    {feed.trending.length === 0 && (
+                        <div className="p-12 text-center bg-slate-50 rounded-[32px] border border-dashed border-slate-200">
+                            <Users className="w-12 h-12 text-slate-300 mx-auto mb-4" />
+                            <p className="text-slate-500 font-bold">No trending architectures yet.</p>
+                        </div>
+                    )}
                 </div>
 
                 <div className="space-y-6">
@@ -102,6 +127,9 @@ const Community: React.FC = () => {
                                     </div>
                                 </div>
                             ))}
+                            {feed.user_shared.length === 0 && (
+                                <p className="text-xs opacity-40 text-center py-4">No shared architectures found.</p>
+                            )}
                         </div>
                         <button className="w-full mt-6 py-3 bg-white/10 hover:bg-white/20 rounded-xl font-bold text-sm transition-colors">
                             Publish New Architecture

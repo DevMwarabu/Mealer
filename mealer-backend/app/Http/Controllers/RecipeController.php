@@ -9,15 +9,76 @@ class RecipeController extends Controller
 {
     public function communityFeed(Request $request)
     {
+        $trending = Recipe::where('is_public', true)
+            ->with('user')
+            ->orderBy('likes', 'desc')
+            ->take(5)
+            ->get()
+            ->map(function ($recipe) use ($request) {
+                $liked = \App\Models\RecipeLike::where('user_id', $request->user()->id)
+                    ->where('recipe_id', $recipe->id)
+                    ->exists();
+
+                return [
+                    'id' => $recipe->id,
+                    'author' => $recipe->user->name,
+                    'name' => $recipe->name,
+                    'likes' => $recipe->likes,
+                    'liked' => $liked,
+                    'health_score' => $recipe->health_score,
+                    'cost' => 'KES ' . number_format($recipe->estimated_cost, 0),
+                    'tags' => $recipe->tags ?: ['General'],
+                ];
+            });
+
+        $userShared = Recipe::where('user_id', $request->user()->id)
+            ->where('is_public', true)
+            ->orderBy('created_at', 'desc')
+            ->get()
+            ->map(function ($recipe) {
+                return [
+                    'id' => $recipe->id,
+                    'name' => $recipe->name,
+                    'likes' => $recipe->likes,
+                    'views' => $recipe->views,
+                ];
+            });
+
         return response()->json([
-            'trending' => [
-                ['id' => 1, 'author' => 'ChefSarah', 'name' => 'High-Protein Quinoa Bowl', 'likes' => 342, 'health_score' => 96, 'cost' => 'KES 450', 'tags' => ['Vegan', 'High Protein']],
-                ['id' => 2, 'author' => 'FitMike', 'name' => 'Low-Carb Turkey Wraps', 'likes' => 215, 'health_score' => 88, 'cost' => 'KES 320', 'tags' => ['Keto', 'Quick']],
-                ['id' => 3, 'author' => 'BudgetEats', 'name' => 'Lentil Curry', 'likes' => 512, 'health_score' => 92, 'cost' => 'KES 180', 'tags' => ['Budget', 'Fiber']],
-            ],
-            'user_shared' => [
-                ['id' => 4, 'name' => 'My Power Breakfast', 'likes' => 12, 'views' => 45]
-            ]
+            'trending' => $trending,
+            'user_shared' => $userShared
         ]);
+    }
+
+    public function toggleLike(Request $request, $id)
+    {
+        $user = $request->user();
+        $recipe = Recipe::findOrFail($id);
+
+        $like = \App\Models\RecipeLike::where('user_id', $user->id)
+            ->where('recipe_id', $recipe->id)
+            ->first();
+
+        if ($like) {
+            $like->delete();
+            $recipe->decrement('likes');
+            $liked = false;
+        } else {
+            \App\Models\RecipeLike::create([
+                'user_id' => $user->id,
+                'recipe_id' => $recipe->id
+            ]);
+            $recipe->increment('likes');
+            $liked = true;
+        }
+
+        return response()->json(['liked' => $liked, 'likes_count' => $recipe->likes]);
+    }
+
+    public function publish(Request $request, $id)
+    {
+        $recipe = $request->user()->recipes()->findOrFail($id);
+        $recipe->update(['is_public' => true]);
+        return response()->json(['message' => 'Recipe published to community.']);
     }
 }
