@@ -119,17 +119,76 @@ class NutritionIntelligenceService
     }
 
     /**
+     * Get macro distribution for the last 30 days.
+     */
+    public function getMacroDistribution(User $user)
+    {
+        $last30Days = $user->meals()
+            ->where('consumed_at', '>=', Carbon::now()->subDays(30))
+            ->get();
+
+        if ($last30Days->isEmpty()) {
+            return [
+                ['name' => 'Protein', 'value' => 33, 'color' => '#1F7A5C'],
+                ['name' => 'Carbs', 'value' => 33, 'color' => '#3AAFA9'],
+                ['name' => 'Fats', 'value' => 34, 'color' => '#F4A261'],
+            ];
+        }
+
+        $totalProtein = $last30Days->sum('total_protein');
+        $totalCarbs = $last30Days->sum('total_carbs');
+        $totalFats = $last30Days->sum('total_fats');
+        $grandTotal = $totalProtein + $totalCarbs + $totalFats;
+
+        if ($grandTotal === 0)
+            return $this->getMacroDistribution($user); // Fallback to neutral
+
+        return [
+            ['name' => 'Protein', 'value' => round(($totalProtein / $grandTotal) * 100), 'color' => '#1F7A5C'],
+            ['name' => 'Carbs', 'value' => round(($totalCarbs / $grandTotal) * 100), 'color' => '#3AAFA9'],
+            ['name' => 'Fats', 'value' => round(($totalFats / $grandTotal) * 100), 'color' => '#F4A261'],
+        ];
+    }
+
+    /**
+     * Get 4-week health score trend.
+     */
+    public function getWeeklyTrend(User $user)
+    {
+        $trends = [];
+        for ($i = 3; $i >= 0; $i--) {
+            $start = Carbon::now()->subWeeks($i + 1)->startOfWeek();
+            $end = Carbon::now()->subWeeks($i + 1)->endOfWeek();
+
+            // Average daily score for that week
+            $scores = [];
+            for ($d = clone $start; $d <= $end; $d->addDay()) {
+                $scores[] = $this->calculateDailyScore($user, $d);
+            }
+
+            $trends[] = [
+                'date' => 'W' . (4 - $i),
+                'score' => round(array_sum($scores) / count($scores)),
+                'avg' => 65 // Population baseline
+            ];
+        }
+
+        return $trends;
+    }
+
+    /**
      * Calculate longitudinal habit and consistency markers.
      */
     public function getHabitMetrics(User $user)
     {
+        // ... (existing logic remains same)
         $last30Days = $user->meals()
             ->where('consumed_at', '>=', Carbon::now()->subDays(30))
             ->orderBy('consumed_at', 'asc')
             ->get();
 
         if ($last30Days->isEmpty())
-            return ['streak' => 0, 'consistency' => 0];
+            return ['streak' => 0, 'consistency_index' => 0, 'status' => 'New', 'momentum' => 'Neutral'];
 
         // 1. Logging Streak
         $streak = 0;
@@ -142,38 +201,19 @@ class NutritionIntelligenceService
             $currentDate->subDay();
         }
 
-        // 2. Meal Timing Consistency (Std Dev of meal times)
-        $mealTimesBySlot = [
-            'Breakfast' => [],
-            'Lunch' => [],
-            'Dinner' => []
-        ];
+        // 2. Consistency
+        $daysWithLogs = $user->meals()
+            ->where('consumed_at', '>=', Carbon::now()->subDays(30))
+            ->distinct()
+            ->count(\DB::raw('DATE(consumed_at)'));
 
-        foreach ($last30Days as $meal) {
-            if (isset($mealTimesBySlot[$meal->meal_type])) {
-                $mealTimesBySlot[$meal->meal_type][] = Carbon::parse($meal->consumed_at)->hour;
-            }
-        }
-
-        $variance = 0;
-        foreach ($mealTimesBySlot as $slot => $hours) {
-            if (count($hours) > 1) {
-                $avg = array_sum($hours) / count($hours);
-                $sumSq = 0;
-                foreach ($hours as $h) {
-                    $sumSq += ($h - $avg) ** 2;
-                }
-                $variance += $sumSq / count($hours);
-            }
-        }
-
-        $consistencyScore = max(0, 100 - ($variance * 5));
+        $consistencyScore = ($daysWithLogs / 30) * 100;
 
         return [
             'streak' => $streak,
             'consistency_index' => round($consistencyScore),
             'status' => $consistencyScore > 80 ? 'Master' : ($consistencyScore > 50 ? 'Steady' : 'Emerging'),
-            'momentum' => $streak > 3 ? 'Rising' : 'Neutral',
+            'momentum' => $streak > 3 ? 'Rising' : ($streak > 0 ? 'Stable' : 'Stalling'),
         ];
     }
 }

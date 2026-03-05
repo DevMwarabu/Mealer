@@ -51,6 +51,7 @@ Route::middleware(['auth:sanctum'])->group(function () {
         Route::get('/diversity', [HealthController::class, 'getDiversity']);
         Route::get('/risks', [HealthController::class, 'getRisks']);
         Route::get('/habits', [HealthController::class, 'getHabits']);
+        Route::get('/analytics-overview', [HealthController::class, 'getAnalyticsOverview']);
         Route::post('/water', [HealthController::class, 'logWater']);
     });
 
